@@ -10,8 +10,8 @@ cmake_minimum_required(VERSION 3.22.1)
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
 
-include_directories( C:/Users/student/Documents/SmartPhoneProject/MyPhone/DxLib_Android/Lib_AndroidStudio/${ANDROID_ABI} )
-link_directories( C:/Users/student/Documents/SmartPhoneProject/MyPhone/DxLib_Android/Lib_AndroidStudio/${ANDROID_ABI} )
+include_directories(C:/Users/student/Documents/SmartPhoneProject/MyPhone/DxLib_Android/Lib_AndroidStudio/${ANDROID_ABI} )
+link_directories(C:/Users/student/Documents/SmartPhoneProject/MyPhone/DxLib_Android/Lib_AndroidStudio/${ANDROID_ABI} )
 
 project("myapplication")
 
@@ -35,18 +35,19 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        native-lib.cpp)
+        main.cpp)
 
-ind_library( # Sets the name of the path variable.
-        log-liblog)
+find_library( # Sets the name of the path variable.
+        log-lib
 
         # Specifies the name of the NDK library that
         # you want CMake to locate.
-
+        log)
 
 # Specifies libraries CMake should link to your target library. You
-# can link libraries from various origins, such as libraries defined in this
-# build script, prebuilt third-party libraries, or Android system libraries.
+# can link multiple libraries, such as libraries you define in this
+# build script, prebuilt third-party libraries, or system libraries.
+
 target_link_libraries( # Specifies the target library.
         native-lib
 
