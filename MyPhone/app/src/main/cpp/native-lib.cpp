@@ -13,7 +13,7 @@ int android_main( void )
     DrawBox( 220, 140, 420, 340, GetColor( 255,255,255 ), TRUE ) ;	// 四角形を描画する
 
     penDown = 0;
-    penColor = GetColor( 255,255,255 ); //白色
+    penColor = GetColor( 255,44255,255 ); //白色
     DrawBox( 0, 0, 50, 50, penColor, FALSE ) ;	// 左上すみの四角
 
     //イベントループ

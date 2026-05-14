@@ -107,12 +107,16 @@ int android_main(){
         return -1;
     }
 
+    //スクリーンサイズ取得
+    int sx,sy,cb;
+    GetScreenState(&sx,&sy,&cb);
+
     SetDrawScreen(DX_SCREEN_BACK);
     //メインループ
     while(ProcessMessage() == 0){
         ClearDrawScreen();
-        int screenW = 720;
-        int screenH = 1280;
+        int screenW = sx;
+        int screenH = sy;
 
         UILayout layout = CreateLayout(screenW,screenH);
         DrawUILayout(layout);
