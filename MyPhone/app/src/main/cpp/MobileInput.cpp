@@ -3,6 +3,9 @@
 //
 #include "DxLib.h"
 #include <math.h>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
 
 struct TouchPoint
 {
@@ -10,7 +13,18 @@ struct TouchPoint
     int y;
 };
 
-//5/14 new↓
+struct Rectangle {
+    int x;
+    int y;
+    int width;
+    int height;
+    int speed;
+};
+
+std::vector<Rectangle> rectangles;
+
+const int X_POSITIONS[3] = {120, 360, 600};
+
 struct LinePos
 {
     int setLineX1;  //レーン1のX座標
@@ -39,54 +53,72 @@ struct MobileInput
     float previousPinchDistance;
 };
 
-//5/14 new↓
 void SetPlayer(int x)
 {
-    LinePos* line;
+    LinePos line;
 
     //定義
-    line->setLineX1 = 120;
-    line->setLineX2 = 360;
-    line->setLineX3 = 600;
+    line.setLineX1 = 120;
+    line.setLineX2 = 360;
+    line.setLineX3 = 600;
 
     //レーン移動の範囲
-    int boxEdgeL1 = line->setLineX1+60;
-    int boxEdgeL2 = line->setLineX2+60;
-    int boxEdgeL3 = line->setLineX3+60;
+    int boxEdgeL1 = line.setLineX1+60;
+    int boxEdgeL2 = line.setLineX2+60;
+    int boxEdgeL3 = line.setLineX3+60;
 
     //プレイヤーのY座標固定
-    int y = 400;
-
-    DrawBox(x,y,x+200,y+200, GetColor(255,255,255),TRUE);
-
+    int y = 1200;
     if(x < boxEdgeL1){
         //playerの座標をsetLineX1に設定
-        DrawBox(line->setLineX1-30,y-30,
-                line->setLineX1+30,y+30,
+        DrawBox(line.setLineX1-50,y-50,
+                line.setLineX1+50,y+50,
                 GetColor(255,255,255),
                 TRUE);
     }
     else if(x < boxEdgeL2 && x > boxEdgeL1){
         //playerの座標をsetLineX2に設定
-        DrawBox(line->setLineX2-30,y-30,
-                line->setLineX2+30,y+30,
+        DrawBox(line.setLineX2-50,y-50,
+                line.setLineX2+50,y+50,
                 GetColor(255,255,255),
                 TRUE);
     }
     else if(x < boxEdgeL3 && x > boxEdgeL2){
         //playerの座標をsetLineX3に設定
-        DrawBox(line->setLineX3-30,y-30,
-                line->setLineX3+30,y+30,
+        DrawBox(line.setLineX3-50,y-50,
+                line.setLineX3+50,y+50,
                 GetColor(255,255,255),
                 TRUE);
     }
 }
 
-float GetDistance(float x1, float y1, float x2, float y2)
-{
-    float dx = x2 - x1;
-    float dy = y2 - y1;
-    return sqrtf(dx * dx + dy * dy);
+//四角形をランダムに生成する関数
+void CreateRectangle() {
+    Rectangle rect;
+    rect.x = X_POSITIONS[rand() % 3]; //A, B, Cのいずれか
+    rect.y = 0;                       //画面上からスタート
+    rect.width = 100;
+    rect.height = 100;
+    rect.speed = 5;                   //移動速度
+    rectangles.push_back(rect);
+}
+
+//四角形を更新して描画する関数
+void UpdateAndDrawRectangles() {
+    for (int i = 0; i < (int)rectangles.size(); i++) {
+        rectangles[i].y += rectangles[i].speed; // 下に移動
+        DrawBox(rectangles[i].x, rectangles[i].y,
+                rectangles[i].x + rectangles[i].width,
+                rectangles[i].y + rectangles[i].height,
+                GetColor(255, 0, 0), TRUE);
+    }
+
+    // 画面外に出た四角形を削除
+    rectangles.erase(
+            std::remove_if(rectangles.begin(), rectangles.end(),
+                           [](const Rectangle& r) { return r.y > 1280; }), // 画面下端 = 1280
+            rectangles.end()
+    );
 }
 
 void InitMobileInput(MobileInput* input)
@@ -131,28 +163,8 @@ void UpdateMobileInput(MobileInput* input)
         {
             int dx = input->currentX - input->startX;
             int dy = input->currentY - input->startY;
-            float distance = GetDistance(
-                    (float)input->startX,
-                    (float)input->startY,
-                    (float)input->currentX,
-                    (float)input->currentY
-            );
 
             int elapsedTime = GetNowCount() - input->startTime;
-
-            if (distance < swipeDistance)
-            {
-                input->tap = true;
-            }
-            else
-            {
-                input->swipe = true;
-
-                if (elapsedTime <= flickTime)
-                {
-                    input->flick = true;
-                }
-            }
         }
 
         input->isTouching = false;
@@ -194,35 +206,6 @@ void UpdateMobileInput(MobileInput* input)
 
         GetTouchInput(0, &x1, &y1, NULL, NULL);
         GetTouchInput(1, &x2, &y2, NULL, NULL);
-
-        float currentDistance = GetDistance(
-                (float)x1,
-                (float)y1,
-                (float)x2,
-                (float)y2
-        );
-
-        if (input->previousPinchDistance == 0.0f)
-        {
-            input->previousPinchDistance = currentDistance;
-            return;
-        }
-
-        float diff = currentDistance - input->previousPinchDistance;
-
-        if (fabsf(diff) > pinchThreshold)
-        {
-            if (diff > 0)
-            {
-                input->pinchOut = true;
-            }
-            else
-            {
-                input->pinchIn = true;
-            }
-        }
-
-        input->previousPinchDistance = currentDistance;
     }
 }
 
@@ -278,11 +261,24 @@ int android_main()
     MobileInput input;
     InitMobileInput(&input);
 
-    while (ProcessMessage() == 0)
+    srand((unsigned int)time(NULL)); // 乱数初期化
+
+    int frameCount = 0;
+
+    while (ProcessMessage() == 0 && ClearDrawScreen() == 0)
     {
         ClearDrawScreen();
 
-        SetPlayer(400);
+        frameCount++;
+
+        //120フレームごとに生成
+        if (frameCount % 120 == 0)
+            CreateRectangle();
+
+        UpdateAndDrawRectangles();
+
+        //レーン移動
+        SetPlayer(input.currentX);
 
         UpdateMobileInput(&input);
         DrawInputDebug(input);
