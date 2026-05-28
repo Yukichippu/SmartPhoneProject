@@ -79,8 +79,8 @@ int android_main()
     {
         enemies[i].pos =
                 {
-                        700.0f + i * 100.0f,
-                        300.0f
+                        100.0f + i * 100.0f,
+                        700.0f
                 };
 
         enemies[i].radius = 30.0f;
