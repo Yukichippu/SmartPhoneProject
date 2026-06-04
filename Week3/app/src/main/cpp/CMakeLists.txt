@@ -9,6 +9,10 @@ cmake_minimum_required(VERSION 3.22.1)
 # Since this is the top level CMakeLists.txt, the project name is also accessible
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
+
+include_directories(C:/Users/student/Documents/SmartPhoneProject/Week3/DxLib_Android/Lib_AndroidStudio/${ANDROID_ABI} )
+link_directories(C:/Users/student/Documents/SmartPhoneProject/Week3/DxLib_Android/Lib_AndroidStudio/${ANDROID_ABI} )
+
 project("myphonew3")
 
 # Creates and names a library, sets it as either STATIC
