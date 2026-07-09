@@ -1,41 +1,68 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    enum State
-    {
-        Idle,
-        Walk,
-        Attack,
-        Guard,
-    }
-    State state;
+    Animator myAnimator;
 
-    void StateController()
+    Vector2 startPos;
+    [SerializeField] 
+    float swipeDistance = 100f;
+
+    private void Awake()
     {
-        switch(state)
+        StatusManager.ResetHP();
+        StatusManager.Damaged_P();
+        StatusManager.Damaged_E();
+
+        myAnimator = GetComponent<Animator>();
+    }
+
+    void Update()
+    {
+        if (Touchscreen.current == null)
+            return;
+
+        var touch = Touchscreen.current.primaryTouch;
+
+        // タッチ開始
+        if (touch.press.wasPressedThisFrame)
         {
-            case State.Idle:
-                break;
-            case State.Walk:
-                break;
-            case State.Attack:
-                break;
-            case State.Guard:
-                break;
+            startPos = touch.position.ReadValue();
+        }
+
+        // タッチ終了
+        if (touch.press.wasReleasedThisFrame)
+        {
+            Vector2 endPos = touch.position.ReadValue();
+
+            // デバッグ用の線を5秒間表示
+            Debug.DrawLine(
+                new Vector3(startPos.x, startPos.y, 0),
+                new Vector3(endPos.x, endPos.y, 0),
+                Color.red,
+                5f);
+
+            Vector2 swipe = endPos - startPos;
+
+            if (swipe.magnitude >= swipeDistance)
+            {
+                Debug.Log("攻撃！（スワイプ）");
+                myAnimator.Play("MeleeAttack_OneHanded");
+            }
+            else
+            {
+                Debug.Log("防御！（タップ）");
+                myAnimator.Play("IdleCombat");
+            }
         }
     }
 
-    void Walk()
+    private void OnCollisionEnter(Collision coll)
     {
-        float pPosX = Time.deltaTime * 5.0f;
-
-        transform.position = new Vector3(
-            pPosX,
-            transform.position.y,
-            transform.position.z
-            );
+        if (coll.transform.tag == "Weapons")
+        {
+            StatusManager.pHP -= 20f;
+        }
     }
-
-
 }
