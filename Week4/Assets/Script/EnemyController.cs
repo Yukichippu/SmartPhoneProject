@@ -2,11 +2,36 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    private void OnCollisionEnter(Collision coll)
+    Animator myAnimator;
+    [SerializeField] BoxCollider myHitBox;
+
+    bool dead;
+
+    void Awake()
     {
-        if (coll.transform.tag == "Weapons")
+        myAnimator = GetComponent<Animator>();
+
+        dead = false;
+        myHitBox.enabled = false;
+    }
+
+    void Update()
+    {
+        if (StatusManager.eHP <= 0 && !dead)
         {
-            StatusManager.eHP -= 20f;
+            myAnimator.Play("root|death");
+            dead = true;
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("HIT");
+
+        if (LayerMask.LayerToName(other.gameObject.layer) == "Weapons")
+        {
+            StatusManager.Damaged_E();
+            myAnimator.Play("root|Take Damage");
         }
     }
 }

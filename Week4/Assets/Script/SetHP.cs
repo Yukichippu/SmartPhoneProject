@@ -23,10 +23,10 @@ public class SetHP : MonoBehaviour
         switch(type)
         {
             case Type.Player:
-                image.fillAmount = StatusManager.pHP * 100;
+                image.fillAmount = StatusManager.pHP;
                 break;
             case Type.Enemy:
-                image.fillAmount = StatusManager.eHP * 100;
+                image.fillAmount = StatusManager.eHP;
                 break;
         }
     }
