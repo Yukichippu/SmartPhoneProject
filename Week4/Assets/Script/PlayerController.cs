@@ -1,5 +1,5 @@
 using System.Collections;
-using Unity.VisualScripting;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,7 +10,10 @@ public class PlayerController : MonoBehaviour
     Animator myAnimator;
     BoxCollider myCollider;
 
+    [SerializeField] List<SkinnedMeshRenderer> mySkinnedMeshRenderer = new();
     [SerializeField] BoxCollider myHitBox;
+
+    List<Color> defColor = new();
 
     Vector2 startPos;
     [SerializeField] 
@@ -23,6 +26,11 @@ public class PlayerController : MonoBehaviour
         StatusManager.ResetHP();
         myAnimator = GetComponent<Animator>();
         myCollider = GetComponent<BoxCollider>();
+
+        for (int i = 0; i < mySkinnedMeshRenderer.Count; i++)
+        {
+            defColor.Add(mySkinnedMeshRenderer[i].material.color);
+        }
 
         myHitBox.enabled = false;
     }
@@ -69,9 +77,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("HIT");
+
         if (LayerMask.LayerToName(other.gameObject.layer) == "Weapons")
         {
             StatusManager.Damaged_P();
+            StartCoroutine(BlinkColor());   
             myAnimator.Play("GetHit");
         }
     }
@@ -79,6 +90,9 @@ public class PlayerController : MonoBehaviour
     IEnumerator Attack()
     {
         myAnimator.Play("MeleeAttack_OneHanded");
+
+        yield return new WaitForSeconds(0.5f);
+
         myHitBox.enabled = true;
 
         yield return new WaitForSeconds(0.5f);
@@ -131,6 +145,22 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         myCollider.enabled = true;
+
+        yield return null;
+    }
+    IEnumerator BlinkColor()
+    {
+        for (int i = 0; i < defColor.Count; i++)
+        {
+            mySkinnedMeshRenderer[i].material.color = Color.red;
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        for (int i = 0; i < defColor.Count; i++)
+        {
+            mySkinnedMeshRenderer[i].material.color = defColor[i];
+        }
 
         yield return null;
     }
